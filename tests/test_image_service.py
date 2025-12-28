@@ -41,8 +41,13 @@ class TestUploadImage:
 
 class TestListImages:
     def test_list_all_images(self, mock_aws):
-        # Setup test data
+        # Clear any existing data first
         table = mock_aws.dynamodb.Table(mock_aws.table_name)
+        scan_response = table.scan()
+        for item in scan_response['Items']:
+            table.delete_item(Key={'image_id': item['image_id']})
+        
+        # Setup test data
         table.put_item(Item={
             'image_id': 'img1',
             'user_id': 'user1',
@@ -87,7 +92,7 @@ class TestViewImage:
         event = {'pathParameters': {'image_id': 'img1'}}
         response = view_image.lambda_handler(event, {})
         assert response['statusCode'] == 200
-        assert response['isBase64Encoded'] == True
+        assert response['isBase64Encoded'] is True
 
     def test_view_nonexistent_image(self, mock_aws):
         event = {'pathParameters': {'image_id': 'nonexistent'}}
