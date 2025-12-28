@@ -1,0 +1,76 @@
+service: instagram-image-service
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: us-east-1
+  environment:
+    BUCKET_NAME: instagram-images
+    TABLE_NAME: image-metadata
+
+functions:
+  uploadImage:
+    handler: src.handlers.upload_image.lambda_handler
+    events:
+      - http:
+          path: images
+          method: post
+          cors: true
+
+  listImages:
+    handler: src.handlers.list_images.lambda_handler
+    events:
+      - http:
+          path: images
+          method: get
+          cors: true
+
+  viewImage:
+    handler: src.handlers.view_image.lambda_handler
+    events:
+      - http:
+          path: images/{image_id}
+          method: get
+          cors: true
+
+  deleteImage:
+    handler: src.handlers.delete_image.lambda_handler
+    events:
+      - http:
+          path: images/{image_id}
+          method: delete
+          cors: true
+
+resources:
+  Resources:
+    ImagesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: instagram-images
+        
+    ImageMetadataTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: image-metadata
+        AttributeDefinitions:
+          - AttributeName: image_id
+            AttributeType: S
+          - AttributeName: user_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: image_id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: user-index
+            KeySchema:
+              - AttributeName: user_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
+        BillingMode: PROVISIONED
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
