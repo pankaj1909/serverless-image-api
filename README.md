@@ -1,4 +1,4 @@
-# Instagram-like Image Service API
+# Serverless Image Service API
 
 ## Overview
 A scalable image upload and management service using AWS Lambda, S3, and DynamoDB with LocalStack for local development.
@@ -241,7 +241,7 @@ aws lambda invoke --endpoint-url=http://localhost:4566 \
   --payload '{"body":"{\"image\":\"base64data\",\"metadata\":{\"user_id\":\"test\"}}"}' \
   response.json
 
-# List images  
+# List images
 aws lambda invoke --endpoint-url=http://localhost:4566 \
   --function-name list-images \
   --payload '{}' \
